@@ -3,6 +3,7 @@
 Adafruit_MCP3008 adc1;
 Adafruit_MCP3008 adc2;
 #define NUM_SENSORS 8
+#define BUZZER_PIN 8
 int MinValue[NUM_SENSORS];
 int MaxValue[NUM_SENSORS];
 int MinValueC[NUM_SENSORS], MaxValueC[NUM_SENSORS];
@@ -36,6 +37,17 @@ void BZon(){
 
 void BZoff(){
   digitalWrite(8, 0);
+}
+
+void b_beebb() {
+  tone(BUZZER_PIN, 2000, 80);
+  delay(100);
+  tone(BUZZER_PIN, 1000, 80);
+  delay(100);
+  tone(BUZZER_PIN, 2000, 80);
+  delay(100);
+  tone(BUZZER_PIN, 2500, 150);
+  delay(100);
 }
 
 void beginADC() {
@@ -330,8 +342,6 @@ void SerialCalibrateC() {
   }
 }
 
-
-
 void LoadCalibration() {
   int addr = 0;
 
@@ -409,4 +419,84 @@ void SerialSensorBoth() {
 
     delay(200);
    
+}
+
+// ฟังก์ชันอ่านค่าเฉลี่ยเซนเซอร์ N รอบ
+void readSensorAverage(int N) {
+  long sumF[NUM_SENSORS] = {0};
+  long sumC[2] = {0};
+
+  for (int n = 0; n < N; n++) {
+    ReadSensor();
+    ReadSensorC();
+    for (int i = 0; i < NUM_SENSORS; i++) sumF[i] += F[i];
+    for (int i = 0; i < 2; i++) sumC[i] += C[i];
+    delay(5); // กันค่าเด้งเกินไป
+  }
+
+  // คำนวณค่าเฉลี่ยกลับไปที่ F และ C
+  for (int i = 0; i < NUM_SENSORS; i++) F[i] = sumF[i] / N;
+  for (int i = 0; i < 2; i++) C[i] = sumC[i] / N;
+}
+
+
+
+void CaliberateRobotSensorEEPROM() {
+  Serial.println("Press OK to start calibrate Sensor");
+  delay(500);
+  OK();
+  delay(500);
+
+  // -------- Step 1 : Min Value --------
+  Serial.println("Calibrating Min");
+  readSensorAverage(20);
+  for (int i = 0; i < NUM_SENSORS; i++) MinValue[i] = F[i] + 50;
+  for (int i = 0; i < 2; i++) MinValueC[i] = C[i] + 50;
+  Beep(100);
+  delay(500);
+  OK();
+
+  // -------- Step 2 : Max Value (Front) --------
+  Serial.println("Calibrating Max Front");
+  readSensorAverage(20);
+  for (int i = 0; i < NUM_SENSORS; i++) MaxValue[i] = F[i] - 100;
+  Beep(100);
+  delay(500);
+  OK();
+
+  // -------- Step 3 : Max Value (Center) --------
+  Serial.println("Calibrating Max Center");
+  readSensorAverage(20);
+  for (int i = 0; i < 2; i++) MaxValueC[i] = C[i] - 100;
+  b_beebb();
+
+  // -------- Print Result --------
+  Serial.println("Finish\n");
+
+  Serial.print("SensorValueF (");
+  for (int i = 0; i < NUM_SENSORS; i++) {
+    Serial.print(MinValue[i]);
+    Serial.print(",");
+  }
+  for (int i = 0; i < NUM_SENSORS; i++) {
+    Serial.print(MaxValue[i]);
+    if (i < NUM_SENSORS - 1) Serial.print(",");
+    else Serial.println(");");
+  }
+
+  Serial.println();
+  Serial.print("SensorValueC (");
+  for (int i = 0; i < 2; i++) {
+    Serial.print(MinValueC[i]);
+    Serial.print(",");
+  }
+  for (int i = 0; i < 2; i++) {
+    Serial.print(MaxValueC[i]);
+    if (i < 1) Serial.print(",");
+    else Serial.println(");");
+  }
+
+  // -------- Save EEPROM --------
+  SaveCalibration();
+  Serial.println("Finish Save EEPROM Complete!!!");
 }

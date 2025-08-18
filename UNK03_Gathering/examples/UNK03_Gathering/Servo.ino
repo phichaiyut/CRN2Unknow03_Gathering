@@ -1,52 +1,83 @@
-#define SV1pin A0
-#define SV2pin A1
-#define SV3pin A2
-#define SV4pin A3
+//________ตัวอย่างการใช้งานการใช้งาน SERVO ____________
 
+//ServoMove(100,90, 80, 5);
 
-void servo(char servoDev, signed int angle) {
-  if (servoDev == 1) {
-    if (angle == -1) {
-      SV1.detach();
-    } else {
-      if (!(SV1.attached())) {
-        SV1.attach(SV1pin);
-      }
-      SV1.write(angle);
-    }
-  } else if (servoDev == 2) {
-    if (angle == -1) {
-      SV2.detach();
-    } else {
-      if (!(SV2.attached())) {
-        SV2.attach(SV2pin);
-      }
-      SV2.write(angle);
-    }
-  } else if (servoDev == 3) {
-    if (angle == -1) {
-      SV3.detach();
-    } else {
-      if (!(SV3.attached())) {
-        SV3.attach(SV3pin);
-      }
-      SV3.write(angle);
-    }
-  } else if (servoDev == 4) {
-    if (angle == -1) {
-      SV4.detach();
-    } else {
-      if (!(SV4.attached())) {
-        SV4.attach(SV4pin);
-      }
-      SV4.write(angle);
-    }
+//ServoUp(5);    // ยกขึ้น เร็ว (delay 5ms)
+//ServoDown(5); // ลง ความเร็วทีละ 5 (delay 5ms)
+
+//ServoOpen(5); //เปิดอ้า ความเร็วทีละ 5 (delay 5ms)
+//ServoCloseSmall(5); //เก็บลูกเล็ก
+//ServoCloseBig(5); //เก็บลูกใหญ่
+// -------------------- ฟังก์ชันหลัก --------------------
+void ServoMove(int target1, int target2, int target3, int spd) {
+  MotorStop();
+  while (pos1 != target1 || pos2 != target2 || pos3 != target3) {
+    if (pos1 < target1) pos1++;
+    else if (pos1 > target1) pos1--;
+
+    if (pos2 < target2) pos2++;
+    else if (pos2 > target2) pos2--;
+
+    if (pos3 < target3) pos3++;
+    else if (pos3 > target3) pos3--;
+
+    servo(1, pos1);
+    servo(2, pos2);
+    servo(3, pos3);
+
+    delay(spd);  // หน่วงเวลา
   }
+  pos1 = target1;
+  pos2 = target2;
+  pos3 = target3;
+  delay(150);
+}
+
+// -------------------- ฟังก์ชันย่อยพิเศษ (มีพารามิเตอร์) --------------------
+
+// ปิดเล็ก
+void ServoCloseSmall(int spd) {
+  ServoMove(pos1, CloseLSmall, CloseRSmall, spd);
+}
+
+// ปิดใหญ่
+void ServoCloseBig(int spd) {
+  ServoMove(pos1, CloseL, CloseR, spd);
+}
+
+// เปิดปกติ
+void ServoOpen(int spd) {
+  ServoMove(pos1, OpenL, OpenR, spd);
+}
+
+// เปิดอีกแบบ (Open2)
+void ServoOpen2(int spd, bool smooth) {
+  ServoMove(pos1, OpenL2, OpenR2, spd);
+}
+
+// เปิดสุด (Max)
+void ServoOpenMax(int spd) {
+  ServoMove(pos1, OpenLMax, OpenRMax, spd);
+}
+
+// ยกขึ้น
+void ServoUp(int spd) {
+  ServoMove(Up, pos2, pos3, spd);
+}
+
+// ลง
+void ServoDown(int spd) {
+  ServoMove(Down, pos2, pos3, spd);
 }
 
 
 void Servo(int x, int y, int z) {
+  MotorStop();
   servo(1, x);
   servo(2, y);
   servo(3, z);
+  pos1 = x;
+  pos2 = y;
+  pos3 = z;
+  delay(200);
 }
