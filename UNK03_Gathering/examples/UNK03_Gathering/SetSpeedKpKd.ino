@@ -7,7 +7,7 @@ void SetKpKd() { //ตั้งค่า KP KD
   setKpKd(SPD_30, 9, 9);
   setKpKd(SPD_40, 11, 11);
   setKpKd(SPD_50, 14, 14);
-  setKpKd(SPD_60, 17, 17);
+  setKpKd(SPD_60, 25, 25);
   setKpKd(SPD_70, 20, 20);
   setKpKd(SPD_80, 22, 22);
   setKpKd(SPD_90, 25, 25);

@@ -158,6 +158,25 @@ void TrackSelect(int spd, char x) {
     }
     SpinR();
   }
+else if (x == 'b') {
+    Motor(-BackLeftBaseSpeed, -BackRightBaseSpeed);
+    Beep(30);
+    while (1) {
+      Motor(-BackLeftBaseSpeed, -BackRightBaseSpeed);
+      ReadCalibrateC();
+      if (C[0] < 500 && C[1] < 500) {
+        Motor(-BackLeftBaseSpeed, -BackRightBaseSpeed);
+        delay(5);
+        break;
+      }
+    }
+    
+  } 
+  else if (x == 'B') {
+    Motor(-BackLeftBaseSpeed, -BackRightBaseSpeed);
+    Beep(30);
+  } 
+
 }
 
     
