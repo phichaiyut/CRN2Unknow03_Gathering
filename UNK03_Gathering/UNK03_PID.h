@@ -5,7 +5,7 @@
 #include <UNK03_ForwardAndTurn.h>
 
 int MaxSpeed = 100;
-int MinSpeed = -0;
+int MinSpeed = 0;
 int ModePidStatus = 0;
 int LastError;
 
@@ -19,14 +19,12 @@ void OK_STOP() {
   }
   Beep(200);
 }
-void MODEPidStatus(int Mod) {
+void MODEPidStatusMaxMinSpeed(int Mod,int max, int min) {
   ModePidStatus = Mod;
-}
-
-void MaxMinSpeed(int max, int min) {
   MaxSpeed = max;
   MinSpeed = min;
 }
+
 
 int readPosition(int Track, int noise) {
   unsigned char i, online = 0;
@@ -116,10 +114,18 @@ void TrackSelect(int spd, char x) {
     while (1) {
       Motor(LeftBaseSpeed, RightBaseSpeed);
       ReadCalibrate();
-      if (F[0] < 550 && F[7] < 550) {
+      if (F[0] < 500 && F[7] < 500) {
+        Motor(LeftBaseSpeed, RightBaseSpeed);
+        while (1) {
+      Motor(LeftBaseSpeed, RightBaseSpeed);
+      ReadCalibrate();
+      if (F[0] > 500 && F[7] > 500) {
         Motor(LeftBaseSpeed, RightBaseSpeed);
         delay(5);
         break;
+      }
+    }
+    
       }
     }
   } 
@@ -166,8 +172,14 @@ else if (x == 'b') {
       ReadCalibrateC();
       if (C[0] < 500 && C[1] < 500) {
         Motor(-BackLeftBaseSpeed, -BackRightBaseSpeed);
-        delay(5);
-        break;
+        while(1){
+          ReadCalibrateC();
+          if (C[0] > 500 && C[1] > 500){
+          delay(5);
+          break;
+          }
+        }
+        
       }
     }
     
@@ -326,7 +338,7 @@ void FFBlack(int Speed, char select) {
 
 
 void MotorSensorF(int Speed, char select, int ch) {
-  BaseSpeed = Speed;
+  BaseSpeed = abs(Speed);
   InitialSpeed();
   while (1) {
     Motor(
@@ -337,11 +349,11 @@ void MotorSensorF(int Speed, char select, int ch) {
     if (F[ch] > Ref) break;
   }
 
-  TrackSelect(Speed, select);
+  TrackSelect(abs(Speed), select);
 }
 
 void MotorSensorC(int Speed, char select, int ch) {
-  BaseSpeed = Speed;
+  BaseSpeed = abs(Speed);
   InitialSpeed();
   while (1) {
     Motor(
@@ -352,5 +364,5 @@ void MotorSensorC(int Speed, char select, int ch) {
     if (C[ch] > Ref) break;
   }
 
-  TrackSelect(Speed, select);
+  TrackSelect(abs(Speed), select);
 }
